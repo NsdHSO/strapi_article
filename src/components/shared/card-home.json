@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_shared_card_homes",
+  "info": {
+    "displayName": "cardHome",
+    "icon": "bulletList"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "subTitle": {
+      "type": "string"
+    },
+    "img": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "altText": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}

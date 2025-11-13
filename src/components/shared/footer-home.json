@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_shared_footer_homes",
+  "info": {
+    "displayName": "footerHome",
+    "icon": "priceTag"
+  },
+  "options": {},
+  "attributes": {
+    "description": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}

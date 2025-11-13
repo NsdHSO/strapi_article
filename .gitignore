@@ -1,0 +1,59 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
+dist
+tmp
+out-tsc
+build
+dist-*
+
+# dependencies
+node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+src/scripts*
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+*.env*
+*.env.example
+*.env.local
+*.env.staging
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini # windows
+
+# Nx and Angular
+.nx/cache
+.nx/workspace-data
+.angular
+
+# Package manager lock files. It is best practice to include these.
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
