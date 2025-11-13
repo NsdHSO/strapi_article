@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: strapi_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-strapi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-strapi}
+      POSTGRES_DB: ${POSTGRES_DB:-strapi}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  strapi:
+    image: node:20-alpine
+    container_name: strapi_app
+    restart: unless-stopped
+    working_dir: /srv/app
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./:/srv/app
+      - strapi_node_modules:/srv/app/node_modules
+      - strapi_build:/srv/app/.cache
+      - strapi_tmp:/srv/app/.tmp
+    # Load Strapi secrets (APP_KEYS, JWT_SECRET, etc.) from your .env file
+    env_file:
+      - ./.env
+    # Override DB settings inside Docker to use Postgres
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 1337
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${POSTGRES_DB:-strapi}
+      DATABASE_USERNAME: ${POSTGRES_USER:-strapi}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-strapi}
+      DATABASE_SSL: "false"
+    # Install build tools for native modules (e.g., better-sqlite3), then install deps and run in dev mode
+    command: sh -c "apk add --no-cache python3 make g++ && npm i -g yarn@1 && yarn install --frozen-lockfile || yarn install && yarn develop"
+
+volumes:
+  pgdata:
+  strapi_node_modules:
+  strapi_build:
+  strapi_tmp:
