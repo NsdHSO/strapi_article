@@ -1,0 +1,122 @@
+name: Build once and promote to FAT → UAT → PROD (Railway)
+
+on:
+  # Manually trigger promotions. You can add push branches later if desired.
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: promotion-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute image tag (lowercase repo)
+        run: |
+          echo "REPO_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "IMAGE=${{ env.REGISTRY }}/${REPO_LOWER}:${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE }}
+
+      - name: Expose image as artifact (for visibility)
+        run: echo $IMAGE > image.txt
+
+      - name: Upload image tag
+        uses: actions/upload-artifact@v4
+        with:
+          name: image
+          path: image.txt
+
+  deploy-fat:
+    name: Deploy to FAT (Railway)
+    needs: build
+    runs-on: ubuntu-latest
+    environment: fat
+    steps:
+      - name: Download image tag
+        uses: actions/download-artifact@v4
+        with:
+          name: image
+      - name: Read image env
+        run: echo "IMAGE=$(cat image.txt)" >> $GITHUB_ENV
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Link service
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_FAT }}
+        run: |
+          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ${{ secrets.RAILWAY_SERVICE_ID }}
+
+      - name: Deploy exact image to FAT
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_FAT }}
+        run: |
+          railway deploy --image "$IMAGE" --environment ${{ secrets.RAILWAY_ENV_ID_FAT }}
+
+  deploy-uat:
+    name: Deploy to UAT (Railway)
+    needs: deploy-fat
+    runs-on: ubuntu-latest
+    environment: uat
+    steps:
+      - name: Download image tag
+        uses: actions/download-artifact@v4
+        with:
+          name: image
+      - name: Read image env
+        run: echo "IMAGE=$(cat image.txt)" >> $GITHUB_ENV
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+      - name: Deploy exact image to UAT
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_UAT }}
+        run: |
+          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ${{ secrets.RAILWAY_SERVICE_ID }}
+          railway deploy --image "$IMAGE" --environment ${{ secrets.RAILWAY_ENV_ID_UAT }}
+
+  deploy-prod:
+    name: Deploy to PROD (Railway)
+    needs: deploy-uat
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Download image tag
+        uses: actions/download-artifact@v4
+        with:
+          name: image
+      - name: Read image env
+        run: echo "IMAGE=$(cat image.txt)" >> $GITHUB_ENV
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+      - name: Deploy exact image to PROD
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
+        run: |
+          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }} --service ${{ secrets.RAILWAY_SERVICE_ID }}
+          railway deploy --image "$IMAGE" --environment ${{ secrets.RAILWAY_ENV_ID_PROD }}

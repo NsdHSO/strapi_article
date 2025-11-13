@@ -1,0 +1,13 @@
+node_modules
+.git
+.github
+.cache
+.tmp
+Dockerfile*
+**/*.log
+yarn-error.log
+dist
+coverage
+.env
+.env.*
+public/uploads
