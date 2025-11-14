@@ -1,10 +1,21 @@
-version: "3.9"
-
 x-strapi-base: &strapi_base
   restart: unless-stopped
   working_dir: /srv/app
 
 services:
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    container_name: meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_NO_ANALYTICS: "true"
+      MEILI_ENV: "development"
+      MEILI_MASTER_KEY: ${MEILISEARCH_API_KEY:-dev_meili_key}
+    volumes:
+      - meili_data:/meili_data
+    profiles: ["fat", "uat"]
 
   # FAT (local dev/testing)
   strapi-fat:
@@ -20,6 +31,8 @@ services:
       - strapi_tmp_fat:/srv/app/.tmp
     env_file:
       - ./.env.fat
+    depends_on:
+      - meilisearch
     command: sh -c "apk add --no-cache python3 make g++ && npm i -g yarn@1 && yarn install --frozen-lockfile || yarn install && yarn develop"
     profiles: ["fat"]
 
@@ -37,6 +50,8 @@ services:
       - strapi_tmp_uat:/srv/app/.tmp
     env_file:
       - ./.env.uat
+    depends_on:
+      - meilisearch
     command: sh -c "apk add --no-cache python3 make g++ && npm i -g yarn@1 && yarn install --frozen-lockfile || yarn install && yarn build && yarn start"
     profiles: ["uat"]
 
@@ -51,6 +66,7 @@ services:
       NODE_ENV: production
     ports:
       - "3337:1337"
+    profiles: ["prod"]
 
 volumes:
   strapi_node_modules:
@@ -60,3 +76,4 @@ volumes:
   strapi_tmp_uat:
   strapi_cache_prod:
   strapi_tmp_prod:
+  meili_data:
