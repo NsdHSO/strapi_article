@@ -1,59 +1,62 @@
 version: "3.9"
 
-services:
-  db:
-    image: postgres:16
-    container_name: strapi_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-strapi}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-strapi}
-      POSTGRES_DB: ${POSTGRES_DB:-strapi}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+x-strapi-base: &strapi_base
+  restart: unless-stopped
+  working_dir: /srv/app
 
-  strapi:
+services:
+
+  # FAT (local dev/testing)
+  strapi-fat:
+    <<: *strapi_base
+    container_name: strapi_fat
     image: node:20-alpine
-    container_name: strapi_app
-    restart: unless-stopped
-    working_dir: /srv/app
-    depends_on:
-      db:
-        condition: service_healthy
     ports:
       - "1337:1337"
     volumes:
       - ./:/srv/app
       - strapi_node_modules:/srv/app/node_modules
-      - strapi_build:/srv/app/.cache
-      - strapi_tmp:/srv/app/.tmp
-    # Load Strapi secrets (APP_KEYS, JWT_SECRET, etc.) from your .env file
+      - strapi_cache_fat:/srv/app/.cache
+      - strapi_tmp_fat:/srv/app/.tmp
     env_file:
-      - ./.env
-    # Override DB settings inside Docker to use Postgres
-    environment:
-      NODE_ENV: development
-      HOST: 0.0.0.0
-      PORT: 1337
-      DATABASE_CLIENT: postgres
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      DATABASE_NAME: ${POSTGRES_DB:-strapi}
-      DATABASE_USERNAME: ${POSTGRES_USER:-strapi}
-      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-strapi}
-      DATABASE_SSL: "false"
-    # Install build tools for native modules (e.g., better-sqlite3), then install deps and run in dev mode
+      - ./.env.fat
     command: sh -c "apk add --no-cache python3 make g++ && npm i -g yarn@1 && yarn install --frozen-lockfile || yarn install && yarn develop"
+    profiles: ["fat"]
+
+  # UAT (pre-production) - connects to remote DB
+  strapi-uat:
+    <<: *strapi_base
+    container_name: strapi_uat
+    image: node:20-alpine
+    ports:
+      - "2337:1337"
+    volumes:
+      - ./:/srv/app
+      - strapi_node_modules:/srv/app/node_modules
+      - strapi_cache_uat:/srv/app/.cache
+      - strapi_tmp_uat:/srv/app/.tmp
+    env_file:
+      - ./.env.uat
+    command: sh -c "apk add --no-cache python3 make g++ && npm i -g yarn@1 && yarn install --frozen-lockfile || yarn install && yarn build && yarn start"
+    profiles: ["uat"]
+
+  # PROD - container built from Dockerfile for deployment (e.g., Railway)
+  strapi-prod:
+    <<: *strapi_base
+    container_name: strapi_prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3337:1337"
 
 volumes:
-  pgdata:
   strapi_node_modules:
-  strapi_build:
-  strapi_tmp:
+  strapi_cache_fat:
+  strapi_tmp_fat:
+  strapi_cache_uat:
+  strapi_tmp_uat:
+  strapi_cache_prod:
+  strapi_tmp_prod:

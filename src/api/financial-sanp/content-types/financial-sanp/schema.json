@@ -1,0 +1,14 @@
+{
+  "kind": "collectionType",
+  "collectionName": "financial_sanps",
+  "info": {
+    "singularName": "financial-sanp",
+    "pluralName": "financial-sanps",
+    "displayName": "Financial-Sanp"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {}
+}
