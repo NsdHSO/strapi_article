@@ -120,28 +120,43 @@ export async function searchFor<T = any>(contentType: string, q: string, offset 
   const col: any = await getOrCreateCollection(collectionName);
 
   const fieldNames = new Set(((col?.fields as any[]) || []).map((f: any) => f.name));
-  const preferred = ['search_text', 'title', 'subTitle'];
+
+  // Content-type specific preferred fields
+  const preferredByCT: Record<string, string[]> = {
+    'api::financial-sanp.financial-sanp': ['title', 'subTitle'],
+  };
+
+  const preferred = preferredByCT[contentType] || ['title', 'subTitle'];
   const queryFields = preferred.filter((f) => fieldNames.has(f));
-  const query_by = queryFields.length ? queryFields.join(',') : 'search_text';
+  const primaryQueryBy = queryFields.length ? queryFields.join(',') : undefined;
 
   const page = Math.max(1, Math.floor(offset / Math.max(1, limit)) + 1);
-  const params: any = {
+  const baseParams: any = {
     q: (q && q.length > 0 ? q : '*'),
-    query_by,
     page,
     per_page: Math.max(1, limit),
   };
 
-  let res: any;
-  try {
-    res = await c.collections(collectionName).documents().search(params);
-  } catch (err: any) {
-    // Fallback to '*' query if unknown field error occurs
+  const candidates: string[] = [];
+  if (primaryQueryBy) candidates.push(primaryQueryBy);
+  candidates.push('title,subTitle');
+  candidates.push('subTitle,title');
+  if (fieldNames.has('title')) candidates.push('title');
+  if (fieldNames.has('subTitle')) candidates.push('subTitle');
+  if (fieldNames.has('publishedAt')) candidates.push('publishedAt');
+
+  let res: any | null = null;
+  for (const qb of candidates) {
     try {
-      res = await c.collections(collectionName).documents().search({ ...params, q: '*' });
-    } catch (err2: any) {
-      throw err;
-    }
+      res = await c.collections(collectionName).documents().search({ ...baseParams, query_by: qb });
+      if (res && Array.isArray(res.hits)) break;
+    } catch {}
+  }
+
+  if (!res) {
+    // Final fallback: wildcard against any available field
+    const anyField = Array.from(fieldNames)[0] || 'title';
+    res = await c.collections(collectionName).documents().search({ ...baseParams, query_by: anyField, q: '*' });
   }
 
   const hits = ((res.hits || []) as any[]).map((h: any) => ({ id: String(h.document?.id ?? ''), ...(h.document || {}) }));

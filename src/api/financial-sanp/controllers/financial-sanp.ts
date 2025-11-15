@@ -46,11 +46,48 @@ export default factories.createCoreController(CT, ({ strapi }) => ({
     const pageSize = Math.min(100, Math.max(1, Number(ctx.query.pageSize || 10)));
     const offset = (page - 1) * pageSize;
 
-    const { hits, total } = await searchFor(CT, q, offset, pageSize);
-    ctx.body = {
-      data: hits,
-      meta: { pagination: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) } },
-    };
+    try {
+      const { hits, total } = await searchFor(CT, q, offset, pageSize);
+      if (q && q.trim().length > 0 && (!hits || hits.length === 0)) {
+        // Fallback: DB search when Typesense yields zero for a non-empty query
+        const filters: any = { $or: [{ title: { $containsi: q } }, { subTitle: { $containsi: q } }] };
+        const [items, dbTotal] = await Promise.all([
+          strapi.entityService.findMany(CT, {
+            filters,
+            fields: ['id', 'title', 'subTitle', 'publishedAt'],
+            pagination: { page, pageSize },
+          } as any),
+          strapi.entityService.count(CT, { filters } as any),
+        ]);
+        ctx.body = {
+          data: items,
+          meta: { pagination: { page, pageSize, total: dbTotal, pageCount: Math.ceil(dbTotal / pageSize) } },
+        };
+        return;
+      }
+      ctx.body = {
+        data: hits,
+        meta: { pagination: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) } },
+      };
+      return;
+    } catch (e) {
+      // Fallback to DB search if Typesense query fails
+      const filters: any = q
+        ? { $or: [{ title: { $containsi: q } }, { subTitle: { $containsi: q } }] }
+        : {};
+      const [items, total] = await Promise.all([
+        strapi.entityService.findMany(CT, {
+          filters,
+          fields: ['id', 'title', 'subTitle', 'publishedAt'],
+          pagination: { page, pageSize },
+        } as any),
+        strapi.entityService.count(CT, { filters } as any),
+      ]);
+      ctx.body = {
+        data: items,
+        meta: { pagination: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) } },
+      };
+    }
   },
 
   async reindex(ctx) {
@@ -74,7 +111,6 @@ export default factories.createCoreController(CT, ({ strapi }) => ({
 
       const items: any[] = await strapi.entityService.findMany(CT, findOpts);
       if (!items.length) break;
-      console.log(JSON.stringify(items));
       
       const docs = items.map((e) => ({
         id: e.id,
