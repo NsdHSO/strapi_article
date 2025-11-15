@@ -124,6 +124,7 @@ export async function searchFor<T = any>(contentType: string, q: string, offset 
   // Content-type specific preferred fields
   const preferredByCT: Record<string, string[]> = {
     'api::financial-sanp.financial-sanp': ['title', 'subTitle'],
+    'api::home.home': ['title', 'subTitle'],
   };
 
   const preferred = preferredByCT[contentType] || ['title', 'subTitle'];

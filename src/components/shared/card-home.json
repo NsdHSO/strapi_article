@@ -24,6 +24,9 @@
     },
     "altText": {
       "type": "string"
+    },
+    "action": {
+      "type": "string"
     }
   },
   "config": {}
