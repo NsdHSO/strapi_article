@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_shared_icons",
+  "info": {
+    "displayName": "Icon"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "font": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}

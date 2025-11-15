@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_shared_cards",
+  "info": {
+    "displayName": "Card",
+    "icon": "apps"
+  },
+  "options": {},
+  "attributes": {
+    "leftSide": {
+      "type": "component",
+      "component": "shared.icon",
+      "repeatable": false
+    },
+    "centerSide": {
+      "type": "component",
+      "component": "shared.center",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

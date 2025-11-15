@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_shared_centers",
+  "info": {
+    "displayName": "center",
+    "icon": "arrowUp"
+  },
+  "options": {},
+  "attributes": {
+    "texts": {
+      "type": "component",
+      "component": "shared.textx",
+      "repeatable": true
+    },
+    "button": {
+      "type": "component",
+      "component": "shared.button",
+      "repeatable": false
+    }
+  },
+  "config": {}
+}

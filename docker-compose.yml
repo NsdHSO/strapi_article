@@ -4,17 +4,17 @@ x-strapi-base: &strapi_base
 
 services:
 
-  meilisearch:
-    image: getmeili/meilisearch:v1.11
-    container_name: meilisearch
+  typesense:
+    image: typesense/typesense:0.25.2
+    container_name: typesense
     ports:
-      - "7700:7700"
+      - "8108:8108"
     environment:
-      MEILI_NO_ANALYTICS: "true"
-      MEILI_ENV: "development"
-      MEILI_MASTER_KEY: ${MEILISEARCH_API_KEY:-dev_meili_key}
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-dev_typesense_key}
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_ENABLE_CORS: "true"
     volumes:
-      - meili_data:/meili_data
+      - typesense_data:/data
     profiles: ["fat", "uat"]
 
   # FAT (local dev/testing)
@@ -32,7 +32,10 @@ services:
     env_file:
       - ./.env.fat
     depends_on:
-      - meilisearch
+      - typesense
+    environment:
+      TYPESENSE_URL: http://typesense:8108
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-dev_typesense_key}
     command: sh -c "apk add --no-cache python3 make g++ && npm i -g yarn@1 && yarn install --frozen-lockfile || yarn install && yarn develop"
     profiles: ["fat"]
 
@@ -51,7 +54,10 @@ services:
     env_file:
       - ./.env.uat
     depends_on:
-      - meilisearch
+      - typesense
+    environment:
+      TYPESENSE_URL: http://typesense:8108
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-dev_typesense_key}
     command: sh -c "apk add --no-cache python3 make g++ && npm i -g yarn@1 && yarn install --frozen-lockfile || yarn install && yarn build && yarn start"
     profiles: ["uat"]
 
@@ -76,4 +82,4 @@ volumes:
   strapi_tmp_uat:
   strapi_cache_prod:
   strapi_tmp_prod:
-  meili_data:
+  typesense_data:

@@ -1,7 +1,7 @@
 {
   "collectionName": "components_shared_card_homes",
   "info": {
-    "displayName": "cardHome",
+    "displayName": "CardHome",
     "icon": "bulletList"
   },
   "options": {},
