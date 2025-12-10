@@ -32,6 +32,7 @@ export interface SharedCardHome extends Struct.ComponentSchema {
     icon: 'bulletList';
   };
   attributes: {
+    action: Schema.Attribute.String;
     altText: Schema.Attribute.String;
     img: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
     subTitle: Schema.Attribute.String;

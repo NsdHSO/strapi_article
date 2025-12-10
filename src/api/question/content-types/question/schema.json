@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "questions",
+  "info": {
+    "singularName": "question",
+    "pluralName": "questions",
+    "displayName": "Question"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+ "attributes": {
+    "text": { "type": "string", "required": true },
+    "explanation": { "type": "text" },
+    "order": { "type": "integer" },
+    "quiz": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::quiz.quiz"
+    },
+    "options": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer-option.answer-option",
+      "mappedBy": "question"
+    },
+    "correctOption": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::answer-option.answer-option",
+      "private": true
+    }
+  }
+}

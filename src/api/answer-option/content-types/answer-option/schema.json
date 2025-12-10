@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "answer_options",
+  "info": {
+    "singularName": "answer-option",
+    "pluralName": "answer-options",
+    "displayName": "Answer Option"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "text": { "type": "string", "required": true },
+    "key": { "type": "string" },
+    "routeName": { "type": "string" },
+    "question": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::question.question",
+      "inversedBy": "options"
+    },
+    "nextQuestion": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question.question"
+    },
+    "screenKey": { "type": "string" },
+    "routeUrl": { "type": "string" }
+  }
+}
