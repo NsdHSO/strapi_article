@@ -10,10 +10,17 @@
     "draftAndPublish": true
   },
   "pluginOptions": {},
- "attributes": {
-    "text": { "type": "string", "required": true },
-    "explanation": { "type": "text" },
-    "order": { "type": "integer" },
+  "attributes": {
+    "text": {
+      "type": "string",
+      "required": true
+    },
+    "explanation": {
+      "type": "text"
+    },
+    "order": {
+      "type": "integer"
+    },
     "quiz": {
       "type": "relation",
       "relation": "manyToOne",

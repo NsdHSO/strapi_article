@@ -11,9 +11,20 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "text": { "type": "string", "required": true },
-    "key": { "type": "string" },
-    "routeName": { "type": "string" },
+    "text": {
+      "type": "string",
+      "required": true
+    },
+    "index": {
+      "type": "integer",
+      "required": true
+    },
+    "key": {
+      "type": "string"
+    },
+    "routeName": {
+      "type": "string"
+    },
     "question": {
       "type": "relation",
       "relation": "manyToOne",
@@ -25,7 +36,11 @@
       "relation": "oneToOne",
       "target": "api::question.question"
     },
-    "screenKey": { "type": "string" },
-    "routeUrl": { "type": "string" }
+    "screenKey": {
+      "type": "string"
+    },
+    "routeUrl": {
+      "type": "string"
+    }
   }
 }
