@@ -1,2 +1,0 @@
-[2025-11-15 12:35:30.340] warn: (Schema Integrity) shared.card-home.attributes.action does not exist on destination
-[2025-11-15 12:35:30.351] error: [FATAL] Unresolved differences in schema
