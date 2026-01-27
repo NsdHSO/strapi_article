@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "articles",
+  "info": {
+    "singularName": "article",
+    "pluralName": "articles",
+    "displayName": "Article",
+    "description": "News articles from Gandul.ro"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": false
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title"
+    },
+    "description": {
+      "type": "text"
+    },
+    "content": {
+      "type": "text"
+    },
+    "author": {
+      "type": "text"
+    },
+    "publishedDate": {
+      "type": "datetime"
+    },
+    "category": {
+      "type": "text"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "featuredImage": {
+      "type": "text"
+    },
+    "sourceUrl": {
+      "type": "text",
+      "unique": true
+    },
+    "videoUrl": {
+      "type": "text"
+    }
+  }
+}

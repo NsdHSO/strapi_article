@@ -506,6 +506,50 @@ export interface ApiAnswerOptionAnswerOption
   };
 }
 
+export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
+  collectionName: 'articles';
+  info: {
+    description: 'News articles from Gandul.ro';
+    displayName: 'Article';
+    pluralName: 'articles';
+    singularName: 'article';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    i18n: {
+      localized: false;
+    };
+  };
+  attributes: {
+    author: Schema.Attribute.Text;
+    category: Schema.Attribute.Text;
+    content: Schema.Attribute.Text;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    featuredImage: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::article.article'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    publishedDate: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'>;
+    sourceUrl: Schema.Attribute.Text & Schema.Attribute.Unique;
+    tags: Schema.Attribute.JSON;
+    title: Schema.Attribute.Text & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    videoUrl: Schema.Attribute.Text;
+  };
+}
+
 export interface ApiFinancialSanpFinancialSanp
   extends Struct.CollectionTypeSchema {
   collectionName: 'financial_sanps';
@@ -1191,6 +1235,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::answer-option.answer-option': ApiAnswerOptionAnswerOption;
+      'api::article.article': ApiArticleArticle;
       'api::financial-sanp.financial-sanp': ApiFinancialSanpFinancialSanp;
       'api::home.home': ApiHomeHome;
       'api::question.question': ApiQuestionQuestion;
