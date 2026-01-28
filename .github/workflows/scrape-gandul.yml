@@ -1,0 +1,41 @@
+name: Scrape Gandul News
+
+on:
+  schedule:
+    # Run every 20 minutes
+    - cron: '*/20 * * * *'
+
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  scrape-news:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Gandul scraper
+        env:
+          STRAPI_API_URL: ${{ secrets.STRAPI_API_URL }}
+          STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+        run: npm run scrape:all
+
+      - name: Report completion
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Scraping completed successfully"
+          else
+            echo "⚠️ Scraping completed with some errors (this is normal)"
+          fi

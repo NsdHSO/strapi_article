@@ -266,7 +266,7 @@ async function saveToStrapi(article) {
     );
 
     if (checkResponse.data.data.length > 0) {
-      console.log(`Article already exists: ${article.title}`);
+      console.log(`⊘ Already exists: ${article.title}`);
       return false;
     }
 
@@ -285,9 +285,19 @@ async function saveToStrapi(article) {
     console.log(`✓ Saved: ${article.title}`);
     return true;
   } catch (error) {
-    console.error(`Error saving article to Strapi: ${error.message}`);
-    if (error.response) {
-      console.error('Response data:', error.response.data);
+    // Handle duplicate key/unique constraint errors
+    if (error.response?.status === 400 || error.response?.status === 409) {
+      const errorMessage = error.response?.data?.error?.message || '';
+      if (errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
+        console.log(`⊘ Duplicate detected: ${article.title}`);
+        return false;
+      }
+    }
+
+    // Log other errors but don't crash
+    console.error(`⚠️  Error saving article: ${error.message}`);
+    if (error.response?.data) {
+      console.error('Response:', JSON.stringify(error.response.data, null, 2));
     }
     return false;
   }
